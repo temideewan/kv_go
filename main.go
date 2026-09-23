@@ -7,10 +7,16 @@ type Store struct {
 }
 
 func (s *Store) Get(key string) (string, bool) {
-	return "", false
+	val, ok := s.data[key]
+	return val, ok
 }
 
-func (s *Store) Set(key string, val any) {}
+func (s *Store) Set(key string, val string) {
+	s.data[key] = val
+}
+func (s *Store) Delete(key string) {
+	delete(s.data, key)
+}
 
 func NewStore() *Store {
 	return &Store{
@@ -18,8 +24,10 @@ func NewStore() *Store {
 	}
 }
 func main() {
-	store := NewStore()
-	store.Get("key1")
-	store.Set("key1", "something")
-	fmt.Println("GoKV - Go key value store project")
+	s := NewStore()
+
+	s.Set("a", "42")
+	s.Set("b", "72")
+	a, _ := s.Get("a")
+	fmt.Println(a)
 }
