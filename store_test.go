@@ -33,10 +33,10 @@ func TestSetGet_RoundTrip(t *testing.T) {
 	store.Set("Hello", "World")
 	want := "World"
 
-	if got, ok := store.Get("Hello"); !ok || got != want {
+	if got, ok := store.Get("Hello"); ok != nil || got != want {
 		t.Errorf("Get() failed")
 	}
-	if got, ok := store.Get("something"); ok || got != "" {
+	if got, ok := store.Get("something"); ok == nil || got != "" {
 		t.Errorf("Get() failed")
 	}
 }
@@ -66,7 +66,7 @@ func TestDelete(t *testing.T) {
 			if got := len(store.Keys()); got != tc.wantLen {
 				t.Errorf("after Delete(%q): Len() = %d, want %d", tc.deleteKey, got, tc.wantLen)
 			}
-			if _, ok := store.Get(tc.deleteKey); ok {
+			if _, ok := store.Get(tc.deleteKey); ok == nil {
 				t.Errorf("after Delete(%q), key still present", tc.deleteKey)
 			}
 		})

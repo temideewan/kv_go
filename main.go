@@ -6,11 +6,12 @@ import (
 
 func main() {
 	s := NewStore()
-
 	s.Set("a", "42")
 	s.Set("b", "72")
-	a, _ := s.Get("a")
+	a, err := s.Get("a")
+
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(a)
-	emptyKey, exists := s.Get("unknown")
-	fmt.Println(emptyKey, exists)
 }
