@@ -1,12 +1,13 @@
 package main
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
 
 func TestKeys_ReturnsAllKeysSorted(t *testing.T) {
-	store := NewStore()
+	store := NewStore(3)
 	store.Set("Temi", "dayo")
 	store.Set("Jonas", "samson")
 	store.Set("Clarion", "dangana")
@@ -20,7 +21,7 @@ func TestKeys_ReturnsAllKeysSorted(t *testing.T) {
 }
 
 func TestKeys_EmptyStore(t *testing.T) {
-	store := NewStore()
+	store := NewStore(1)
 	got := store.Keys()
 
 	if len(got) != 0 {
@@ -28,8 +29,14 @@ func TestKeys_EmptyStore(t *testing.T) {
 	}
 }
 
+func TestSetGet_EmptyKeys(t *testing.T) {
+	store := NewStore(2)
+	if _, err := store.Get(""); err == nil || !errors.Is(err, ErrEmptyKey) {
+		t.Error("Get() failed")
+	}
+}
 func TestSetGet_RoundTrip(t *testing.T) {
-	store := NewStore()
+	store := NewStore(2)
 	store.Set("Hello", "World")
 	want := "World"
 
@@ -57,7 +64,7 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			store := NewStore()
+			store := NewStore(2)
 			for k, v := range tc.setup {
 				store.Set(k, v)
 			}
