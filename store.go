@@ -8,7 +8,7 @@ import (
 
 var ErrKeyDoesNotExist = errors.New("Key does not exist")
 var ErrEmptyKey = errors.New("The key is mandatory")
-var ErrMaxLengthExceeded = errors.New("The max length is exceeded")
+var ErrStoreFull = errors.New("The store is currently full")
 
 type Store struct {
 	data    map[string]string
@@ -37,7 +37,7 @@ func (s *Store) Set(key string, val string) error {
 
 	_, exists := s.data[key]
 	if s.maxSize > 0 && s.Len() >= s.maxSize && !exists {
-		return fmt.Errorf("Set(%q): %w", key, ErrMaxLengthExceeded)
+		return fmt.Errorf("Set(%q): %w", key, ErrStoreFull)
 	}
 	s.data[key] = val
 	return nil

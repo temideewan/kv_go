@@ -6,15 +6,15 @@ import (
 
 func main() {
 	s := NewStore(2)
-	var setErr error
-	setErr = s.Set("a", "42")
-	setErr = s.Set("b", "72")
-	setErr = s.Set("c", "24")
+	_ = s.Set("a", "42")
+	_ = s.Set("b", "72")
+	if setErr := s.Set("c", "24"); setErr != nil {
+		fmt.Println(setErr)
+	}
 	a, err := s.Get("a")
 
-	if err != nil || setErr != nil {
+	if err != nil {
 		fmt.Println(err)
-		fmt.Println(setErr)
 	}
 	fmt.Println(a)
 }
