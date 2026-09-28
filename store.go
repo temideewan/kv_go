@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"slices"
@@ -53,6 +54,16 @@ func (s *Store) Keys() []string {
 }
 func (s *Store) Delete(key string) {
 	delete(s.data, key)
+}
+
+func (s *Store) SetKeyWithEncryption(key, value string) (string, error) {
+	encoded := base64.StdEncoding.EncodeToString([]byte(value))
+	if err := s.Set(key, encoded); err != nil {
+		return "", err
+	}
+
+	return s.Get(key)
+
 }
 
 func NewStore(maxSize int) *Store {
