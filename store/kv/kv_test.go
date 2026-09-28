@@ -1,8 +1,9 @@
-package main
+package kv
 
 import (
 	"errors"
 	"reflect"
+	storeModule "td_redis/store"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestKeys_EmptyStore(t *testing.T) {
 
 func TestSetGet_EmptyKeys(t *testing.T) {
 	store := NewStore(2)
-	if _, err := store.Get(""); err == nil || !errors.Is(err, ErrEmptyKey) {
+	if _, err := store.Get(""); err == nil || !errors.Is(err, storeModule.ErrEmptyKey) {
 		t.Error("Get() failed")
 	}
 }

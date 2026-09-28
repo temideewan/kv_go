@@ -1,13 +1,16 @@
-package main
+package ttl
 
 import (
+	"encoding/base64"
 	"fmt"
 	"sort"
+	"td_redis/store"
 	"time"
 )
 
 type TTLStore struct {
 	data map[string]ttlEntry
+	ttl  time.Duration
 }
 
 type ttlEntry struct {
@@ -15,25 +18,31 @@ type ttlEntry struct {
 	expiresAt time.Time
 }
 
-func NewTTlStore() *TTLStore {
+func NewTTLStore(ttl time.Duration) *TTLStore {
 	return &TTLStore{
 		data: make(map[string]ttlEntry),
+		ttl:  ttl,
 	}
 }
 
-func (t *TTLStore) Set(key string, value string, ttl time.Duration) error {
+func (t *TTLStore) Set(key string, value string) error {
 	if key == "" {
-		return ErrEmptyKey
+		return store.ErrEmptyKey
 	}
 
 	// insert the ttl entry, calculate the time to expire based on the ttl duration.
 
+	t.data[key] = ttlEntry{
+		value:     value,
+		expiresAt: time.Now().Add(t.ttl),
+	}
+
 	return nil
 }
 
-func (t *TTLStore) GetWithTTL(key string) (string, error) {
+func (t *TTLStore) Get(key string) (string, error) {
 	if key == "" {
-		return "", ErrEmptyKey
+		return "", store.ErrEmptyKey
 	}
 
 	entry, ok := t.data[key]
@@ -61,4 +70,14 @@ func (t *TTLStore) Keys() []string {
 	sort.Strings(keys)
 
 	return keys
+}
+
+func (s *TTLStore) SetKeyWithEncryption(key, value string) (string, error) {
+	encoded := base64.StdEncoding.EncodeToString([]byte(value))
+	if err := s.Set(key, encoded); err != nil {
+		return "", err
+	}
+
+	return s.Get(key)
+
 }

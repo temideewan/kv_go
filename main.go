@@ -3,21 +3,34 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"td_redis/store"
+	"td_redis/store/kv"
+	"td_redis/store/ttl"
+	"time"
 )
 
 func main() {
-	keyValueStore := NewStore(20)
+	keyValueStore := kv.NewStore(20)
 
-	encrypted, err := SetKeyWithEncryption(*keyValueStore, "a", "This is an encrypted text")
+	encrypted, err := SetKeyWithEncryption(keyValueStore, "a", "This is an encrypted text")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	ttlStore := ttl.NewTTLStore(time.Second * 2)
+
+	encryptedTTl, err := SetKeyWithEncryption(ttlStore, "a", "This is a n encrypted text")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	fmt.Println(encrypted)
+	fmt.Println(encryptedTTl)
 }
 
-func SetKeyWithEncryption(s Store, key, value string) (string, error) {
+func SetKeyWithEncryption(s store.Storer, key, value string) (string, error) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(value))
 	if err := s.Set(key, encoded); err != nil {
 		return "", err

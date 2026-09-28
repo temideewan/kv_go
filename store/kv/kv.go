@@ -1,15 +1,11 @@
-package main
+package kv
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"slices"
+	"td_redis/store"
 )
-
-var ErrKeyDoesNotExist = errors.New("Key does not exist")
-var ErrEmptyKey = errors.New("The key is mandatory")
-var ErrStoreFull = errors.New("The store is currently full")
 
 type Store struct {
 	data    map[string]string
@@ -18,7 +14,7 @@ type Store struct {
 
 func (s *Store) Get(key string) (string, error) {
 	if key == "" {
-		return "", ErrEmptyKey
+		return "", store.ErrEmptyKey
 	}
 	val, ok := s.data[key]
 	if !ok {
@@ -33,12 +29,12 @@ func (s *Store) Len() int {
 
 func (s *Store) Set(key string, val string) error {
 	if key == "" {
-		return ErrEmptyKey
+		return store.ErrEmptyKey
 	}
 
 	_, exists := s.data[key]
 	if s.maxSize > 0 && s.Len() >= s.maxSize && !exists {
-		return fmt.Errorf("Set(%q): %w", key, ErrStoreFull)
+		return fmt.Errorf("Set(%q): %w", key, store.ErrStoreFull)
 	}
 	s.data[key] = val
 	return nil
