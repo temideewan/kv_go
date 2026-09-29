@@ -30,6 +30,12 @@ func main() {
 	fmt.Println(encryptedTTl)
 }
 
+func CreateStore() store.Storer {
+	plain := kv.NewStore(20)
+	logger := NewLoggingMiddleware(plain)
+	return logger
+}
+
 func SetKeyWithEncryption(s store.Storer, key, value string) (string, error) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(value))
 	if err := s.Set(key, encoded); err != nil {
