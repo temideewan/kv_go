@@ -3,6 +3,7 @@ package kv
 import (
 	"encoding/base64"
 	"fmt"
+	"maps"
 	"slices"
 	"td_redis/store"
 )
@@ -67,4 +68,14 @@ func NewStore(maxSize int) *Store {
 		data:    make(map[string]string),
 		maxSize: maxSize,
 	}
+}
+
+func (s *Store) Clone() *Store {
+	cp := &Store{
+		data:    make(map[string]string, len(s.data)),
+		maxSize: s.maxSize,
+	}
+
+	cp.data = maps.Clone(s.data)
+	return cp
 }

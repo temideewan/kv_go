@@ -5,29 +5,32 @@ import (
 	"fmt"
 	"td_redis/store"
 	"td_redis/store/kv"
-	"td_redis/store/ttl"
-	"time"
 )
 
 func main() {
-	keyValueStore := kv.NewStore(20)
+	kvStore := kv.NewStore(20)
+	PopulateDefaults(kvStore)
+	newStore := kvStore.Clone()
 
-	encrypted, err := SetKeyWithEncryption(keyValueStore, "a", "This is an encrypted text")
-	if err != nil {
-		fmt.Println(err)
-		return
+	newStore.Set("env", "development")
+	fmt.Println(kvStore)
+	fmt.Println(newStore)
+
+}
+
+func PopulateDefaults(s store.Storer) error {
+	defaults := map[string]string{
+		"env":     "production",
+		"version": "0.0.1",
+		"debug":   "true",
 	}
 
-	ttlStore := ttl.NewTTLStore(time.Second * 2)
-
-	encryptedTTl, err := SetKeyWithEncryption(ttlStore, "a", "This is a n encrypted text")
-	if err != nil {
-		fmt.Println(err)
-		return
+	for k, v := range defaults {
+		if err := s.Set(k, v); err != nil {
+			return fmt.Errorf("PopulateDefaults %w", err)
+		}
 	}
-
-	fmt.Println(encrypted)
-	fmt.Println(encryptedTTl)
+	return nil
 }
 
 func CreateStore() store.Storer {
