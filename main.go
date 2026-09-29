@@ -33,7 +33,8 @@ func main() {
 func CreateStore() store.Storer {
 	plain := kv.NewStore(20)
 	logger := NewLoggingMiddleware(plain)
-	return logger
+	metric := NewMetricMiddleware(logger)
+	return metric
 }
 
 func SetKeyWithEncryption(s store.Storer, key, value string) (string, error) {

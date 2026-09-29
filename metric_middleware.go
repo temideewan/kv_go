@@ -73,3 +73,7 @@ func (m *MetricMiddleware) Report() {
 		fmt.Printf("Average get latency: %v.", avg)
 	}
 }
+
+func (m *MetricMiddleware) SetKeyWithEncryption(key, value string) (string, error) {
+	return m.inner.SetKeyWithEncryption(key, value)
+}

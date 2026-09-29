@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"log"
 	"os"
 	"td_redis/store"
@@ -53,10 +52,5 @@ func (l *LoggingMiddleware) Keys() []string {
 }
 
 func (l *LoggingMiddleware) SetKeyWithEncryption(key, value string) (string, error) {
-	encoded := base64.StdEncoding.EncodeToString([]byte(value))
-	if err := l.Set(key, encoded); err != nil {
-		return "", err
-	}
-	return l.Get(key)
-
+	return l.inner.SetKeyWithEncryption(key, value)
 }
