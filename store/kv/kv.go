@@ -6,6 +6,7 @@ import (
 	"maps"
 	"slices"
 	"td_redis/store"
+	"time"
 )
 
 type Store struct {
@@ -32,6 +33,9 @@ func (s *Store) Set(key string, val string) error {
 	if key == "" {
 		return store.ErrEmptyKey
 	}
+
+	// simulate some work to slow down.
+	time.Sleep(time.Second)
 
 	_, exists := s.data[key]
 	if s.maxSize > 0 && s.Len() >= s.maxSize && !exists {
