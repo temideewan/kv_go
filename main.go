@@ -3,24 +3,39 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"sync"
 	"td_redis/store"
 	"td_redis/store/kv"
+	"time"
 )
 
-func main() {
-	cmds := []Command{
-		{Op: "SET", Key: "env", Value: "Production"},
-		{Op: "SET", Key: "version", Value: "0.0.1"},
-		{Op: "SET", Key: "debug", Value: "true"},
-		{Op: "GET", Key: "env"},
-		{Op: "SET", Key: "region", Value: "eu-west-1"},
-		{Op: "GET", Key: "version"},
-	}
+var (
+	counter int
+	mu      sync.Mutex
+)
 
-	s := kv.NewStore(5)
-	RestoreOnBoots(s, cmds)
-	fmt.Println("restored, store size:", s.Len())
-	fmt.Println("Keys:", s.Keys())
+func increment() {
+	mu.Lock()
+	defer mu.Unlock()
+	v := counter
+	time.Sleep(time.Microsecond)
+	counter = v + 1
+}
+
+func main() {
+	expected := 1000
+	var wg sync.WaitGroup
+
+	for i := 0; i < expected; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			increment()
+		}()
+	}
+	wg.Wait()
+	fmt.Println("counter:", counter)
+	fmt.Println("expected:", expected)
 }
 
 func CreateStore() store.Storer {
