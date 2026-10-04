@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strconv"
 	"sync"
 	"td_redis/store"
 	"time"
@@ -17,19 +18,21 @@ type Store struct {
 }
 
 func (s *Store) Get(key string) (string, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 	if key == "" {
 		return "", store.ErrEmptyKey
 	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	val, ok := s.data[key]
 	if !ok {
-		return "", fmt.Errorf("Key %s does not exist", key)
+		return "", store.ErrKeyDoesNotExist
 	}
 	return val, nil
 }
 
 func (s *Store) Len() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return len(s.data)
 }
 
@@ -43,7 +46,7 @@ func (s *Store) Set(key string, val string) error {
 	// simulate some work to slow down.
 	time.Sleep(time.Second)
 	_, exists := s.data[key]
-	if s.maxSize > 0 && s.Len() >= s.maxSize && !exists {
+	if s.maxSize > 0 && len(s.data) >= s.maxSize && !exists {
 		return fmt.Errorf("Set(%q): %w", key, store.ErrStoreFull)
 	}
 	s.data[key] = val
@@ -51,6 +54,8 @@ func (s *Store) Set(key string, val string) error {
 }
 
 func (s *Store) Keys() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	keys := make([]string, 0, len(s.data))
 	for k := range s.data {
 		keys = append(keys, k)
@@ -80,6 +85,8 @@ func NewStore(maxSize int) *Store {
 }
 
 func (s *Store) Clone() *Store {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	cp := &Store{
 		data:    make(map[string]string, len(s.data)),
 		maxSize: s.maxSize,
@@ -87,4 +94,31 @@ func (s *Store) Clone() *Store {
 
 	cp.data = maps.Clone(s.data)
 	return cp
+}
+
+func (s *Store) Incr(key string) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if key == "" {
+		return 0, store.ErrEmptyKey
+	}
+
+	// Read
+	intVal := 0
+	if val, ok := s.data[key]; ok {
+		v, err := strconv.Atoi(val)
+		if err != nil {
+			return 0, fmt.Errorf("INCR %q: %w", key, err)
+		}
+		intVal = v
+	}
+
+	// Modify
+	intVal++
+	time.Sleep(time.Microsecond)
+
+	// Write
+	s.data[key] = strconv.Itoa(intVal)
+
+	return intVal, nil
 }

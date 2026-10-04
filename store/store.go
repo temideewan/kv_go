@@ -13,4 +13,5 @@ type Storer interface {
 	Delete(key string)
 	Keys() []string
 	SetKeyWithEncryption(key, value string) (string, error)
+	Incr(key string) (int, error)
 }
