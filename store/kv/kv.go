@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"sync"
 	"td_redis/store"
 	"time"
 )
 
 type Store struct {
+	mu      sync.RWMutex
 	data    map[string]string
 	maxSize int
 }
 
 func (s *Store) Get(key string) (string, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	if key == "" {
 		return "", store.ErrEmptyKey
 	}
@@ -30,13 +34,14 @@ func (s *Store) Len() int {
 }
 
 func (s *Store) Set(key string, val string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if key == "" {
 		return store.ErrEmptyKey
 	}
 
 	// simulate some work to slow down.
 	time.Sleep(time.Second)
-
 	_, exists := s.data[key]
 	if s.maxSize > 0 && s.Len() >= s.maxSize && !exists {
 		return fmt.Errorf("Set(%q): %w", key, store.ErrStoreFull)

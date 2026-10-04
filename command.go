@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 	"td_redis/store"
 )
 
@@ -24,7 +25,12 @@ func dispatch(s store.Storer, c Command) {
 
 // This replays a slice of commands against the store
 func RestoreOnBoots(s store.Storer, cmds []Command) {
+	var wg sync.WaitGroup
 	for _, c := range cmds {
-		dispatch(s, c)
+		wg.Go(func() {
+			dispatch(s, c)
+		})
 	}
+
+	wg.Wait()
 }

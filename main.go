@@ -17,7 +17,7 @@ func main() {
 		{Op: "GET", Key: "version"},
 	}
 
-	s := kv.NewStore(0)
+	s := kv.NewStore(5)
 	RestoreOnBoots(s, cmds)
 	fmt.Println("restored, store size:", s.Len())
 	fmt.Println("Keys:", s.Keys())
