@@ -21,6 +21,9 @@ func main() {
 		cmds[i] = Command{Op: "INCR", Key: "pageviews"}
 	}
 
+	cmds = append(cmds, Command{Op: "INCR", Key: ""})         //empty key -> ErrEmptyKey
+	cmds = append(cmds, Command{Op: "WAT", Key: "pageviews"}) //unknown op
+
 	RestoreOnBoots(s, cmds)
 
 	got, _ := s.Get("pageviews")
